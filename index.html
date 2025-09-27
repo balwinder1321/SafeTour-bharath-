@@ -1,0 +1,518 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>SafeTour Bharat — Demo</title>
+  <style>
+    /* ---------- Root & Theme ---------- */
+    :root{
+      --bg:#05060a;
+      --card:#0b1220;
+      --neon:#00f0ff;
+      --accent:#7b3cff;
+      --muted:#94a3b8;
+      --glass: rgba(255,255,255,0.04);
+      --glow: 0 6px 30px rgba(123,60,255,0.12);
+      --radius:16px;
+      font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%;background:linear-gradient(180deg,#02111a 0%, #05060a 100%);color:#e6eef8; margin:0;}
+    a{color:var(--neon)}
+
+    /* ---------- App container ---------- */
+    .app{
+      max-width:1100px;margin:28px auto;padding:22px;border-radius:20px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));box-shadow:var(--glow);backdrop-filter: blur(6px);
+    }
+
+    header{display:flex;align-items:center;justify-content:space-between;gap:20px}
+    .brand{display:flex;gap:14px;align-items:center}
+    .logo {
+  height: 80px;      /* increase size */
+  width: auto;       /* keep aspect ratio */
+  object-fit: contain;
+  border-radius: 10px;   /* optional: smooth corners */
+  box-shadow: 0 4px 18px rgba(0, 240, 255, 0.2); /* glow effect */
+}
+
+    .brand h1{margin:0;font-size:20px;letter-spacing:0.4px}
+    nav{display:flex;gap:12px;align-items:center}
+    nav button{background:transparent;border:1px solid rgba(255,255,255,0.04);padding:8px 14px;border-radius:10px;color:var(--muted);cursor:pointer;transition:all .25s}
+    nav button:hover{transform:translateY(-3px);color:var(--neon);border-color:rgba(0,240,255,0.14)}
+
+    /* ---------- Pages ---------- */
+    .pages{margin-top:22px}
+    section.page{display:none;animation:fade .45s ease both}
+    section.active{display:block}
+
+    @keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+    /* ---------- Landing / Carousel ---------- */
+    .hero{display:grid;grid-template-columns:1fr 420px;gap:18px}
+    .carousel{position:relative;overflow:hidden;border-radius:16px;padding:18px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));box-shadow:0 8px 30px rgba(0,0,0,0.6)}
+    .slides{display:flex;transition:transform 0.7s cubic-bezier(.2,.9,.3,1)}
+    .slide{min-width:100%;display:flex;gap:14px;align-items:center}
+    .slide img{width:48%;border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,0.6)}
+    .slide .txt{width:52%}
+    .slide h2{margin:0 0 8px 0;color:var(--neon)}
+    .slide p{margin:0;color:var(--muted);line-height:1.45}
+    .dots{display:flex;gap:8px;position:absolute;left:50%;transform:translateX(-50%);bottom:12px}
+    .dot{width:12px;height:12px;border-radius:999px;background:rgba(255,255,255,0.06);box-shadow:0 6px 18px rgba(0,0,0,0.6);cursor:pointer}
+    .dot.active{background:linear-gradient(90deg,var(--neon),var(--accent));box-shadow:0 6px 20px rgba(123,60,255,0.14)}
+
+    /* ---------- Forms ---------- */
+    .card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));padding:18px;border-radius:14px;border:1px solid rgba(255,255,255,0.02);}
+    form .row{display:flex;gap:12px}
+    label{display:block;font-size:13px;color:var(--muted);margin-bottom:6px}
+    input,select,textarea{width:100%;padding:12px;border-radius:12px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:inherit;outline:none}
+    .btn{background:linear-gradient(90deg,var(--neon),var(--accent));padding:10px 14px;border-radius:12px;border:none;color:#021;font-weight:600;cursor:pointer;box-shadow:0 8px 30px rgba(123,60,255,0.08)}
+
+    /* ---------- Dashboard ---------- */
+    .dash-grid{display:grid;grid-template-columns:1fr 340px;gap:18px}
+    .panel{padding:14px;border-radius:12px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.03)}
+    .header-row{display:flex;justify-content:space-between;align-items:center}
+    .user-chip{display:flex;gap:10px;align-items:center}
+    .avatar{width:44px;height:44px;border-radius:12px;background:linear-gradient(90deg,var(--neon),var(--accent));display:flex;align-items:center;justify-content:center;color:#021;font-weight:700}
+    .small{font-size:13px;color:var(--muted)}
+
+    /* Nearby list */
+    .place{display:flex;justify-content:space-between;align-items:center;padding:10px;border-radius:10px;margin-bottom:8px;border:1px solid rgba(255,255,255,0.02)}
+
+    /* camera */
+    #cameraView{width:100%;height:280px;background:#000;border-radius:10px;display:flex;align-items:center;justify-content:center;overflow:hidden}
+    video{width:100%;height:100%;object-fit:cover}
+
+    /* translation */
+    .translator{display:flex;gap:8px;align-items:center}
+    textarea{min-height:72px}
+
+    /* about team */
+    .team-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px}
+    .member{padding:10px;border-radius:12px;text-align:center;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.00));border:1px solid rgba(255,255,255,0.02)}
+    .member img{width:86px;height:86px;border-radius:999px;object-fit:cover;display:block;margin:0 auto 10px}
+
+    /* footer */
+    footer{margin-top:18px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.02);color:var(--muted);display:flex;justify-content:space-between;align-items:center}
+
+    /* small screens */
+    @media(max-width:900px){
+      .hero{grid-template-columns:1fr}
+      .dash-grid{grid-template-columns:1fr}
+      header{flex-direction:column;align-items:flex-start;gap:12px}
+      nav{flex-wrap:wrap}
+    }
+.app-header {
+  display: flex;
+  align-items: center;
+  padding: 10px 20px;
+  background: rgba(0,0,0,0.7);
+}
+
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <div class="brand">
+        <header class="app-header">
+            <img src="logo.png" alt="SafeTour Bharat Logo" class="logo">
+          </header>
+          
+       
+        <div>
+          <h1>SafeTour Bharat</h1>
+          <div class="small">Futuristic tourist safety & AI tour guide</div>
+        </div>
+      </div>
+      <nav>
+        <button onclick="go('home')">Home</button>
+        <button onclick="go('kyc')">KYC</button>
+        <button onclick="go('login')">Login</button>
+        <button onclick="go('about')">About</button>
+      </nav>
+    </header>
+
+    <div class="pages">
+      <!-- HOME / LANDING -->
+      <section id="home" class="page active">
+        <div class="hero">
+          <div class="carousel card">
+            <div style="overflow:hidden;border-radius:12px;height:260px;">
+              <div class="slides" id="slides">
+                <div class="slide">
+                  <img src="Amritsar.jpg" alt="tour1"/>
+                  <div class="txt">
+                    <h2>Travel safe. Travel smart.</h2>
+                    <p>SafeTour Bharat helps tourists with live alerts, quick emergency access, and an AI tour guide to plan & guide your journey.</p>
+                  </div>
+                </div>
+                <div class="slide">
+                  <img src="ram.webp" alt="tour2"/>
+                  <div class="txt">
+                    <h2>Built-in AI Tour Guide</h2>
+                    <p>AI Tour Guide (SafeTour AI) recommends hotels, restaurants & attractions based on your preferences and helps translate the local language.</p>
+                  </div>
+                </div>
+                <div class="slide">
+                  <img src="taj.webp" alt="tour3"/>
+                  <div class="txt">
+                    <h2>Emergency tools & Live tracking</h2>
+                    <p>Share your journey, get live location tracking, immediate access to nearby hospitals & police stations — all in one app.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="dots" id="dots"></div>
+          </div>
+
+          <div class="card">
+            <h3 style="margin-top:4px;color:var(--neon)">Why SafeTour Bharat?</h3>
+            <p class="small">A solution to boost tourism — increases traveler confidence, helps hotels & local businesses by delivering verified visitors, and creates a safer ecosystem for cultural exploration.</p>
+            <hr style="border:none;height:1px;background:rgba(255,255,255,0.02);margin:12px 0" />
+            <ul class="small">
+              <li>Instant emergency contacts & location-aware assistance</li>
+              <li>AI copilot for itinerary suggestions and local translation</li>
+              <li>Verified KYC to improve hotel & vendor trust</li>
+            </ul>
+            <div style="margin-top:12px;text-align:right">
+              <button class="btn" onclick="go('kyc')">Get Started — Register</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- KYC Registration -->
+      <section id="kyc" class="page">
+        <div class="card">
+          <h2 style="color:var(--neon);margin:0 0 6px 0">KYC Registration</h2>
+          <p class="small">complete your kyc Registration and enter into login page and enter same password</p>
+          <form id="kycForm">
+            <div class="row">
+              <div style="flex:1">
+                <label>Full name</label>
+                <input type="text" id="name" required />
+              </div>
+              <div style="flex:1">
+                <label>Email</label>
+                <input type="email" id="email" required />
+              </div>
+            </div>
+            <div class="row" style="margin-top:12px">
+              <div style="flex:1">
+                <label>Phone</label>
+                <input type="tel" id="phone" required />
+              </div>
+              <div style="flex:1">
+                <label>Password</label>
+                <input type="password" id="password" required />
+              </div>
+            </div>
+            <div style="margin-top:12px">
+              <label>Country</label>
+              <input id="country" />
+            </div>
+            <div style="margin-top:12px">
+              <label>Traveller Type</label>
+              <select id="travellerType"><option>Solo</option><option>Couple</option><option>Family</option><option>Group</option></select>
+            </div>
+
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px">
+              <small class="small">By registering, you agree to terms .</small>
+              <div>
+                <button type="button" class="btn" onclick="submitKYC()">Register</button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </section>
+
+      <!-- LOGIN -->
+      <section id="login" class="page">
+        <div class="card" style="max-width:560px;margin:auto">
+          <h2 style="color:var(--neon)">Login</h2>
+          <p class="small">Use the email & password you entered during KYC.</p>
+          <form onsubmit="event.preventDefault();login();">
+            <label>Email</label>
+            <input id="loginEmail" type="email" required />
+            <label style="margin-top:8px">Password</label>
+            <input id="loginPass" type="password" required />
+            <div style="margin-top:12px;text-align:right">
+              <button class="btn" type="submit">Login</button>
+            </div>
+          </form>
+        </div>
+      </section>
+
+      <!-- DASHBOARD -->
+      <section id="dashboard" class="page">
+        <div class="header-row">
+          <div class="user-chip">
+            <div class="avatar" id="avatarTxt">U</div>
+            <div>
+              <div id="userName" style="font-weight:700"></div>
+              <div class="small" id="userEmail"></div>
+            </div>
+          </div>
+          <div>
+            <button class="btn" onclick="logout()">Logout</button>
+          </div>
+        </div>
+        <div style="height:14px"></div>
+        <div class="dash-grid">
+          <div>
+            <div class="panel">
+              <h3 style="color:var(--neon)">SafeTour AI Guide</h3>
+              <p class="small">(Demo AI) Ask travel suggestions, itinerary or quick help.</p>
+              <div style="display:flex;gap:8px;margin-top:8px">
+                <input id="aiInput" placeholder="Ask SafeTour AI — e.g. 'Show me hotels near me'" />
+                <button class="btn" onclick="askAI()">Ask</button>
+              </div>
+              <div id="aiOutput" style="margin-top:12px;padding:10px;border-radius:10px;background:var(--glass);color:var(--muted)">SafeTour AI ready.</div>
+            </div>
+
+            <div style="height:12px"></div>
+
+            <div class="panel">
+              <div style="display:flex;justify-content:space-between;align-items:center">
+                <h3 style="color:var(--neon);margin:0">Journey & Live Tracking</h3>
+                <small class="small">Share to be tracked</small>
+              </div>
+
+              <div style="margin-top:8px">
+                <label>Trip name</label>
+                <input id="tripName" />
+                <div style="display:flex;gap:8px;margin-top:8px">
+                  <button class="btn" onclick="startTracking()">Start Tracking</button>
+                  <button class="btn" style="background:transparent;color:var(--muted);border:1px solid rgba(255,255,255,0.03)" onclick="stopTracking()">Stop</button>
+                </div>
+                <div id="trackingState" class="small" style="margin-top:8px">Not tracking.</div>
+                <div id="liveLocation" class="small" style="margin-top:6px"></div>
+              </div>
+            </div>
+
+            <div style="height:12px"></div>
+
+            <div class="panel">
+              <h3 style="color:var(--neon);margin:0">Camera — Scan Place</h3>
+              <p class="small">Use your camera to capture a scene. We'll show lat / long using geolocation.</p>
+              <div id="cameraView"></div>
+              <div style="display:flex;gap:8px;margin-top:8px">
+                <button class="btn" onclick="openCamera()">Open Camera</button>
+                <button class="btn" onclick="capturePhoto()">Capture</button>
+              </div>
+              <div id="photoResult" style="margin-top:8px"></div>
+            </div>
+
+          </div>
+
+          <aside>
+            <div class="panel">
+              <h3 style="color:var(--neon)">Nearby — Quick</h3>
+              <div id="nearbyList" style="margin-top:8px"></div>
+              <div style="margin-top:8px;text-align:center"><small class="small">(uses simulated data if location not permitted)</small></div>
+            </div>
+
+            <div style="height:12px"></div>
+
+            <div class="panel">
+              <h3 style="color:var(--neon)">Translator</h3>
+              <div class="translator">
+                <textarea id="sourceText" placeholder="Enter text to translate"></textarea>
+              </div>
+              <div style="display:flex;gap:8px;margin-top:8px">
+                <select id="fromLang"><option value="auto">Auto</option><option value="en">English</option><option value="hi">Hindi</option><option value="mr">Marathi</option></select>
+                <select id="toLang"><option value="hi">Hindi</option><option value="en">English</option><option value="mr">Marathi</option></select>
+              </div>
+              <div style="margin-top:8px;display:flex;gap:8px">
+                <button class="btn" onclick="translateMock()">Translate</button>
+                <button class="btn" onclick="speakOut()">Speak</button>
+              </div>
+              <div id="translationResult" style="margin-top:8px;color:var(--muted)"></div>
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      <!-- ABOUT -->
+      <section id="about" class="page">
+        <div class="card">
+          <h2 style="color:var(--neon)">About Us</h2>
+          <p class="small">SafeTour Bharat — Team scouts & creators. We are building a safer tourism experience with AI-assist, verified travellers & real-time emergency support.</p>
+          <p class="small">email : smarttourne@gmail.com  contact us: +91 9346598012</p>
+          <h3 style="color:var(--neon);margin-top:12px">Team Scouts</h3>
+          <div class="team-grid">
+            <div class="member"><img src="pfp.jpeg" alt="sardar" /><strong>Sardar Balwinder Singh</strong><div class="small">Lead Scout</div></div>
+            <div class="member"><img src="pfp.jpeg" alt="badha" /><strong>Badha Manisai</strong><div class="small">Operations</div></div>
+            <div class="member"><img src="pfp.jpeg" alt="thanusri" /><strong>Korutla Thanusri</strong><div class="small">Field</div></div>
+            <div class="member"><img src="pfp.jpeg" alt="rashmita" /><strong>Tikkha Rashmita</strong><div class="small">UX</div></div>
+            <div class="member"><img src="pfp.jpeg" alt="akshitha" /><strong>Akshitha Aluguri</strong><div class="small">Design</div></div>
+            <div class="member"><img src="pfp.jpeg" alt="hrushikesh" /><strong>Hrushikesh Narala</strong><div class="small">Engineering</div></div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+
+    <footer>
+      <div>©2025 SafeTour Bharat — • Built with ❤️</div>
+      <div class="small">Version: •1.11.00</div>
+    </footer>
+  </div>
+
+
+  <script>
+    /* ---------- Simple SPA navigation ---------- */
+    const pages = ['home','kyc','login','dashboard','about'];
+    function go(id){
+      pages.forEach(p=>document.getElementById(p).classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+      window.scrollTo({top:0,behavior:'smooth'});
+      if(id==='dashboard') initDashboard();
+    }
+
+    /* ---------- Carousel ---------- */
+    const slidesEl = document.getElementById('slides');
+    const dotsEl = document.getElementById('dots');
+    let current = 0; const total = 3;
+    for(let i=0;i<total;i++){const d=document.createElement('div');d.className='dot'+(i===0?' active':'');d.onclick=(()=>{moveTo(i)});dotsEl.appendChild(d)}
+    function moveTo(i){current=i;slidesEl.style.transform=`translateX(-${i*100}%)`;Array.from(dotsEl.children).forEach((c,idx)=>c.classList.toggle('active', idx===i))}
+    setInterval(()=>{current=(current+1)%total;moveTo(current)},4500);
+
+    /* ---------- KYC store ---------- */
+    function submitKYC(){
+      const u={name:document.getElementById('name').value.trim(),email:document.getElementById('email').value.trim(),phone:document.getElementById('phone').value.trim(),password:document.getElementById('password').value,country:document.getElementById('country').value,travellerType:document.getElementById('travellerType').value};
+      if(!u.name||!u.email||!u.password){alert('Please fill name, email and password');return}
+      localStorage.setItem('safetour_user_'+u.email,JSON.stringify(u));
+      alert('KYC saved locally. You can now login.');
+      document.getElementById('kycForm').reset();
+      go('login');
+    }
+
+    /* ---------- Login ---------- */
+    function login(){
+      const e=document.getElementById('loginEmail').value.trim();const p=document.getElementById('loginPass').value;
+      const raw = localStorage.getItem('safetour_user_'+e);
+      if(!raw){alert('No user found with this email. Please register.');return}
+      const u=JSON.parse(raw);
+      if(u.password!==p){alert('Password mismatch');return}
+      localStorage.setItem('safetour_loggedin',e);
+      alert('Login success');
+      go('dashboard');
+    }
+    function logout(){localStorage.removeItem('safetour_loggedin');alert('Logged out');go('home')}
+
+    /* ---------- Dashboard init ---------- */
+    function initDashboard(){
+      const email = localStorage.getItem('safetour_loggedin');
+      if(!email){alert('Please login first');go('login');return}
+      const u = JSON.parse(localStorage.getItem('safetour_user_'+email));
+      document.getElementById('userName').innerText = u.name;
+      document.getElementById('userEmail').innerText = u.email;
+      document.getElementById('avatarTxt').innerText = u.name.split(' ').map(s=>s[0]).slice(0,2).join('').toUpperCase();
+      populateNearby();
+    }
+
+    /* ---------- Mock AI ---------- */
+    function askAI(){
+      const q = document.getElementById('aiInput').value.trim();
+      const out = document.getElementById('aiOutput');
+      if(!q){out.innerText='Ask something about hotels, food, emergency or translation.';return}
+      out.innerText='Thinking...';
+      setTimeout(()=>{
+        // Very small rule-based responses for demo
+        const ql=q.toLowerCase();
+        if(ql.includes('hotel')) out.innerText='Here are 3 nearby hotels we recommend: Sunrise Inn, Heritage Homestay, Blue Lotus Hotel. Use Nearby panel for more.';
+        else if(ql.includes('restaurant')||ql.includes('eat')) out.innerText='Top dishes: Local thali, street kebabs, herbal chai. Recommended: Spice Hub, Riverfront Café.';
+        else if(ql.includes('emergency')||ql.includes('police')||ql.includes('hospital')) out.innerText='If emergency, use Nearby → Police / Hospital. We will also send your last shared location to your emergency contacts (demo).';
+        else out.innerText='SafeTour AI suggests visiting the local cultural bazaar in the morning, and booking hotels through verified partners.';
+      },900)
+    }
+
+    /* ---------- Nearby (simulated) ---------- */
+    function populateNearby(){
+      const list = document.getElementById('nearbyList');list.innerHTML='';
+      // try get location
+      if(navigator.geolocation){navigator.geolocation.getCurrentPosition(pos=>{
+        const lat = pos.coords.latitude, lon = pos.coords.longitude;
+        const samples = makeNearby(lat,lon);
+        samples.forEach(s=>{
+          const el=document.createElement('div');el.className='place';el.innerHTML=`<div><strong>${s.name}</strong><div class='small'>${s.type} • ${s.dist} km</div></div><div><button class='btn' onclick='alert("Calling ${s.name} (demo)")'>Open</button></div>`;list.appendChild(el)
+        })
+      },err=>{list.innerHTML=demoNearby();})} else {list.innerHTML=demoNearby();}
+    }
+    function makeNearby(lat,lon){
+      // simple mocked distances
+      return [
+        {name:'City General Hospital',type:'Hospital',dist:(Math.random()*2+0.3).toFixed(2)},
+        {name:'Station Police Outpost',type:'Police',dist:(Math.random()*3+0.3).toFixed(2)},
+        {name:'Riverfront Hotel',type:'Hotel',dist:(Math.random()*2+0.3).toFixed(2)},
+        {name:'Heritage Museum',type:'Attraction',dist:(Math.random()*5+0.8).toFixed(2)}
+      ];
+    }
+    function demoNearby(){
+      return `<div class='place'><div><strong>City General Hospital</strong><div class='small'>Hospital • 1.2 km</div></div><div><button class='btn' onclick="alert('demo')">Open</button></div></div>
+      <div class='place'><div><strong>Station Police Outpost</strong><div class='small'>Police • 0.9 km</div></div><div><button class='btn' onclick="alert('demo')">Open</button></div></div>
+      <div class='place'><div><strong>Riverfront Hotel</strong><div class='small'>Hotel • 2.5 km</div></div><div><button class='btn' onclick="alert('demo')">Open</button></div></div>`
+    }
+
+    /* ---------- Tracking ---------- */
+    let watchId=null;
+    function startTracking(){
+      const trip=document.getElementById('tripName').value||'My Trip';
+      if(!navigator.geolocation){alert('Geolocation not supported');return}
+      watchId = navigator.geolocation.watchPosition(pos=>{
+        const lat=pos.coords.latitude, lon=pos.coords.longitude;
+        const ts = new Date().toISOString();
+        document.getElementById('trackingState').innerText = `Tracking: ${trip} • Last: ${ts}`;
+        document.getElementById('liveLocation').innerText = `Lat ${lat.toFixed(6)}, Lon ${lon.toFixed(6)}`;
+        // store a local track list
+        const email = localStorage.getItem('safetour_loggedin');
+        if(email){
+          const key='safetour_track_'+email;
+          const arr = JSON.parse(localStorage.getItem(key) || '[]');
+          arr.push({trip,lat,lon,ts});localStorage.setItem(key,JSON.stringify(arr));
+        }
+      },err=>{alert('Unable to access location: '+err.message)},{enableHighAccuracy:true,maximumAge:2000});
+    }
+    function stopTracking(){if(watchId) navigator.geolocation.clearWatch(watchId);watchId=null;document.getElementById('trackingState').innerText='Not tracking.'}
+
+    /* ---------- Camera ---------- */
+    let stream=null;
+    async function openCamera(){
+      try{stream=await navigator.mediaDevices.getUserMedia({video:true,audio:false});const v=document.createElement('video');v.autoplay=true;v.playsinline=true;v.srcObject=stream;const cv=document.getElementById('cameraView');cv.innerHTML='';cv.appendChild(v)}catch(e){alert('Camera open failed: '+e.message)}
+    }
+    function capturePhoto(){
+      const cv=document.getElementById('cameraView');const video=cv.querySelector('video');if(!video){alert('Open camera first');return}
+      const c=document.createElement('canvas');c.width=video.videoWidth||640;c.height=video.videoHeight||480;const ctx=c.getContext('2d');ctx.drawImage(video,0,0,c.width,c.height);const data=c.toDataURL('image/jpeg',0.8);
+      document.getElementById('photoResult').innerHTML=`<img src='${data}' style='max-width:100%;border-radius:10px'/>`;
+      // fetch geolocation
+      if(navigator.geolocation){navigator.geolocation.getCurrentPosition(pos=>{document.getElementById('photoResult').innerHTML+=`<div class='small' style='margin-top:8px'>Photo captured at: Lat ${pos.coords.latitude.toFixed(6)}, Lon ${pos.coords.longitude.toFixed(6)}</div>`},err=>{document.getElementById('photoResult').innerHTML+=`<div class='small'>Location not available</div>`})}
+    }
+
+    /* ---------- Translator (mock) ---------- */
+    function translateMock(){
+      const src=document.getElementById('sourceText').value.trim();if(!src){document.getElementById('translationResult').innerText='Enter text first.';return}
+      const to=document.getElementById('toLang').value; // very naive
+      // This demo does not call external services — we mock
+      document.getElementById('translationResult').innerText = `Translated to ${to.toUpperCase()}: ${pseudoTranslate(src,to)}`;
+    }
+    function pseudoTranslate(text,to){
+      // trivial reversible mock: reverse words and append language tag — NOT REAL translation
+      return text.split(' ').reverse().join(' ') + ` [${to}]`;
+    }
+    function speakOut(){const txt=document.getElementById('translationResult').innerText||document.getElementById('sourceText').value; if('speechSynthesis' in window){const u=new SpeechSynthesisUtterance(txt);speechSynthesis.speak(u)}else alert('Speech not supported');}
+
+    // small helper to show demo
+    (function(){
+      const logged = localStorage.getItem('safetour_loggedin');
+      if(logged) console.log('Auto logged in:',logged);
+    })();
+    
+
+    // lightweight touch: keyboard enter in AI input
+    document.getElementById('aiInput').addEventListener('keydown',e=>{if(e.key==='Enter')askAI()});
+    
+  </script>
+</body>
+</html>
